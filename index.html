@@ -337,18 +337,32 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    .month-group { margin-bottom: 16px; }
+    .month-group { margin-bottom: 10px; }
     .month-group:last-child { margin-bottom: 0; }
     .month-heading {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-      padding: 0 4px;
+      padding: 12px 14px;
+      background: #f5f3ff;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
     }
+    .month-heading:hover { background: #ede9ff; }
+    .month-heading .mh-left  { display: flex; flex-direction: column; gap: 2px; }
     .month-heading .mh-label { font-size: 13px; font-weight: 700; color: #667eea; }
     .month-heading .mh-sub   { font-size: 11px; color: #aaa; }
+    .month-heading .mh-right { display: flex; align-items: center; gap: 10px; }
     .month-heading .mh-total { font-size: 13px; font-weight: 700; color: #333; }
+    .month-heading .mh-arrow { font-size: 11px; color: #999; transition: transform 0.2s; }
+    .month-group.open .mh-arrow { transform: rotate(180deg); }
+    .month-body {
+      display: none;
+      padding-top: 8px;
+    }
+    .month-group.open .month-body { display: block; }
     .history-list { display: flex; flex-direction: column; gap: 6px; }
     .history-item {
       display: flex;
@@ -799,10 +813,11 @@ function renderHistory() {
 
   const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
+  const curKey = getCurrentPeriodKey();
   container.innerHTML = sortedKeys.map(key => {
     const items      = groups[key];
-    // 月の合計も娯楽費除外
     const monthTotal = items.filter(e => !e.excluded).reduce((s, e) => s + e.amount, 0);
+    const isOpen     = key === curKey;
 
     const itemsHtml = items.map(e => `
       <div class="history-item ${e.excluded ? 'is-excluded' : ''}">
@@ -814,17 +829,27 @@ function renderHistory() {
       </div>`).join('');
 
     return `
-      <div class="month-group">
-        <div class="month-heading">
-          <div>
+      <div class="month-group ${isOpen ? 'open' : ''}" id="mg-${key}">
+        <div class="month-heading" onclick="toggleMonthGroup('${key}')">
+          <div class="mh-left">
             <div class="mh-label">📅 ${keyToLabel(key)}</div>
             <div class="mh-sub">${keyToRangeLabel(key)}</div>
           </div>
-          <span class="mh-total">¥${monthTotal.toLocaleString()}</span>
+          <div class="mh-right">
+            <span class="mh-total">¥${monthTotal.toLocaleString()}</span>
+            <span class="mh-arrow">▼</span>
+          </div>
         </div>
-        <div class="history-list">${itemsHtml}</div>
+        <div class="month-body">
+          <div class="history-list">${itemsHtml}</div>
+        </div>
       </div>`;
   }).join('');
+}
+
+// ===== Month Group Toggle =====
+function toggleMonthGroup(key) {
+  document.getElementById('mg-' + key).classList.toggle('open');
 }
 
 // ===== Toast =====
