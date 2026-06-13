@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レシート家計簿</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(102,126,234,0.4);
+    }
+    header h1 { font-size: 20px; font-weight: 700; }
+    .period-label { font-size: 11px; opacity: 0.85; margin-top: 3px; }
+
+    .container { max-width: 480px; margin: 0 auto; padding: 16px; }
+
+    /* ===== 残高カード ===== */
+    .balance-card {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 20px;
+      padding: 22px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      color: white;
+    }
+    .balance-card .bc-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .balance-card .bc-col { text-align: center; flex: 1; }
+    .balance-card .bc-label { font-size: 11px; opacity: 0.6; margin-bottom: 4px; }
+    .balance-card .bc-value { font-size: 18px; font-weight: 700; }
+    .balance-card .bc-value.budget-val { color: #a8d8ff; }
+    .balance-card .bc-value.spent-val  { color: #ffb3b3; }
+    .balance-card .bc-value.remain-val { font-size: 22px; }
+    .balance-card .bc-value.remain-val.positive { color: #7fffb3; }
+    .balance-card .bc-value.remain-val.negative { color: #ff6b6b; }
+    .balance-card .bc-value.remain-val.none { color: #ccc; }
+
+    /* プログレスバー */
+    .progress-wrap { background: rgba(255,255,255,0.15); border-radius: 8px; height: 8px; overflow: hidden; }
+    .progress-bar  { height: 100%; border-radius: 8px; transition: width 0.5s; }
+    .progress-bar.ok   { background: linear-gradient(90deg, #7fffb3, #00d2ff); }
+    .progress-bar.warn { background: linear-gradient(90deg, #ffd700, #ffb347); }
+    .progress-bar.over { background: linear-gradient(90deg, #ff6b6b, #ff4500); }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.6;
+    }
+
+    /* ===== 設定パネル ===== */
+    .settings-toggle {
+      width: 100%;
+      background: white;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+      color: #1a1a2e;
+    }
+    .settings-toggle .arrow { transition: transform 0.2s; font-size: 12px; color: #999; }
+    .settings-toggle.open .arrow { transform: rotate(180deg); }
+
+    .settings-panel {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: none;
+    }
+    .settings-panel.open { display: block; }
+
+    .setting-group { margin-bottom: 18px; }
+    .setting-group:last-child { margin-bottom: 0; }
+    .setting-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-row { display: flex; gap: 8px; align-items: center; }
+    .input-row input, .setting-input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .input-row input:focus, .setting-input:focus { border-color: #667eea; }
+    .input-unit { font-size: 13px; color: #888; white-space: nowrap; }
+
+    .period-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .period-row .p-label { font-size: 13px; color: #555; white-space: nowrap; }
+    .period-row input[type=number] {
+      width: 60px;
+      padding: 10px 8px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      text-align: center;
+    }
+    .period-row input[type=number]:focus { border-color: #667eea; }
+
+    .btn-apply {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    /* ===== API Key ===== */
+    .api-section {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .api-section label { font-size: 12px; color: #666; display: block; margin-bottom: 6px; }
+    .api-row { display: flex; gap: 8px; }
+    .api-row input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .api-row input:focus { border-color: #667eea; }
+    .btn-save {
+      padding: 10px 16px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ===== Camera ===== */
+    .camera-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .camera-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+
+    .capture-area {
+      border: 2px dashed #d0d0d0;
+      border-radius: 12px;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      overflow: hidden;
+      background: #fafafa;
+    }
+    .capture-area:hover { border-color: #667eea; background: #f5f3ff; }
+    .capture-area img { max-width: 100%; max-height: 240px; border-radius: 10px; display: block; }
+    .capture-placeholder { text-align: center; padding: 20px; }
+    .capture-placeholder .icon { font-size: 40px; margin-bottom: 8px; }
+    .capture-placeholder p { font-size: 13px; color: #999; }
+
+    #fileInput { display: none; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary  { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+    .btn-secondary{ background: #f0f2f5; color: #444; }
+
+    /* ===== Amount + Category ===== */
+    .amount-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .amount-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+
+    .amount-display {
+      background: linear-gradient(135deg, #667eea11, #764ba211);
+      border: 1.5px solid #667eea44;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .amount-display .label { font-size: 12px; color: #666; white-space: nowrap; }
+    .amount-display input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 24px;
+      font-weight: 700;
+      color: #667eea;
+      text-align: right;
+      outline: none;
+    }
+    .amount-display .yen { font-size: 20px; font-weight: 700; color: #667eea; }
+
+    .ai-status {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      margin-bottom: 10px;
+      min-height: 18px;
+    }
+    .ai-status.loading { color: #667eea; }
+    .ai-status.error   { color: #e74c3c; }
+    .ai-status.success { color: #27ae60; }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .cat-btn {
+      padding: 10px 4px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: white;
+      font-size: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .cat-btn .cat-icon { font-size: 20px; }
+    .cat-btn.selected {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    .cat-btn:hover:not(.selected) { border-color: #667eea; background: #f5f3ff; }
+
+    .btn-add {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-add:active:not(:disabled) { transform: scale(0.98); }
+
+    /* ===== Summary ===== */
+    .summary-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 16px;
+    }
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .summary-header h2 { font-size: 15px; font-weight: 600; }
+    .period-filter-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .filter-btn {
+      flex: 1;
+      padding: 7px 4px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      background: white;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .filter-btn.active {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    .total-badge {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .category-list { display: flex; flex-direction: column; gap: 8px; }
+    .cat-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #fafafa;
+      border-radius: 10px;
+    }
+    .cat-row .cat-icon  { font-size: 18px; }
+    .cat-row .cat-name  { flex: 1; font-size: 13px; font-weight: 500; }
+    .cat-row .cat-amount{ font-size: 14px; font-weight: 700; color: #333; }
+    .cat-row .cat-count { font-size: 11px; color: #999; }
+    .cat-row.has-data   { background: #f5f3ff; }
+    .cat-row.has-data .cat-name { color: #667eea; }
+
+    /* ===== History ===== */
+    .history-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 16px;
+    }
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .history-header h2 { font-size: 15px; font-weight: 600; }
+    .btn-clear {
+      font-size: 12px;
+      color: #e74c3c;
+      background: none;
+      border: 1px solid #e74c3c;
+      padding: 4px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .history-list { display: flex; flex-direction: column; gap: 6px; }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #fafafa;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    .history-item.outside-period { opacity: 0.45; }
+    .history-item .h-icon   { font-size: 16px; }
+    .history-item .h-cat    { flex: 1; color: #555; }
+    .history-item .h-date   { font-size: 11px; color: #aaa; }
+    .history-item .h-amount { font-weight: 700; color: #333; }
+    .history-item .h-del {
+      background: none;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 6px;
+    }
+    .history-item .h-del:hover { color: #e74c3c; }
+
+    .empty-state { text-align: center; padding: 20px; color: #bbb; font-size: 13px; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1a2e;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 0.3s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📒 レシート家計簿</h1>
+  <div class="period-label" id="headerPeriod">集計期間を設定してください</div>
+</header>
+
+<div class="container">
+
+  <!-- 残高カード -->
+  <div class="balance-card" id="balanceCard">
+    <div class="bc-row">
+      <div class="bc-col">
+        <div class="bc-label">目標予算</div>
+        <div class="bc-value budget-val" id="bcBudget">未設定</div>
+      </div>
+      <div class="bc-col">
+        <div class="bc-label">期間内支出</div>
+        <div class="bc-value spent-val" id="bcSpent">¥0</div>
+      </div>
+      <div class="bc-col">
+        <div class="bc-label">残り</div>
+        <div class="bc-value remain-val none" id="bcRemain">–</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar ok" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="progress-meta">
+      <span id="progressPct">0%</span>
+      <span id="progressDays"></span>
+    </div>
+  </div>
+
+  <!-- 設定トグル -->
+  <button class="settings-toggle" id="settingsToggle" onclick="toggleSettings()">
+    <span>⚙️ 予算・期間の設定</span>
+    <span class="arrow">▼</span>
+  </button>
+
+  <div class="settings-panel" id="settingsPanel">
+
+    <!-- 目標予算 -->
+    <div class="setting-group">
+      <label class="setting-label">💰 月の目標予算（任意）</label>
+      <div class="input-row">
+        <input type="number" id="budgetInput" placeholder="例: 50000" min="0" />
+        <span class="input-unit">円</span>
+      </div>
+    </div>
+
+    <!-- 集計期間 -->
+    <div class="setting-group">
+      <label class="setting-label">📅 集計期間（毎月◯日 〜 翌月◯日）</label>
+      <div class="period-row">
+        <span class="p-label">毎月</span>
+        <input type="number" id="periodStart" min="1" max="31" placeholder="1" />
+        <span class="p-label">日から翌月</span>
+        <input type="number" id="periodEnd" min="1" max="31" placeholder="末" />
+        <span class="p-label">日まで</span>
+      </div>
+      <div style="margin-top:8px; font-size:12px; color:#aaa;">
+        ※ 空欄の場合は1日〜末日（暦月）
+      </div>
+    </div>
+
+    <button class="btn-apply" onclick="applySettings()">設定を保存</button>
+  </div>
+
+  <!-- API Key -->
+  <div class="api-section">
+    <label>Anthropic API Key（AI読み取り用・任意）</label>
+    <div class="api-row">
+      <input type="password" id="apiKey" placeholder="sk-ant-..." />
+      <button class="btn-save" onclick="saveApiKey()">保存</button>
+    </div>
+  </div>
+
+  <!-- Camera -->
+  <div class="camera-section">
+    <h2>📸 レシートを撮影</h2>
+    <div class="capture-area" id="captureArea" onclick="document.getElementById('fileInput').click()">
+      <div class="capture-placeholder" id="placeholder">
+        <div class="icon">🧾</div>
+        <p>タップして撮影 / 画像を選択</p>
+      </div>
+      <img id="previewImg" style="display:none" />
+    </div>
+    <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="onImageSelect(event)" />
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="clearImage()">クリア</button>
+      <button class="btn btn-primary" id="btnRead" onclick="readReceipt()" disabled>AI読み取り</button>
+    </div>
+  </div>
+
+  <!-- Amount + Category -->
+  <div class="amount-section">
+    <h2>💴 金額とカテゴリ</h2>
+    <div class="ai-status" id="aiStatus"></div>
+    <div class="amount-display">
+      <span class="label">合計金額</span>
+      <input type="number" id="amountInput" placeholder="0" min="0" />
+      <span class="yen">円</span>
+    </div>
+    <div class="category-grid" id="categoryGrid"></div>
+    <button class="btn-add" id="btnAdd" onclick="addEntry()" disabled>追加する</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-section">
+    <div class="summary-header">
+      <h2>📊 カテゴリ別合計</h2>
+      <div class="total-badge" id="grandTotal">¥0</div>
+    </div>
+    <div class="period-filter-row">
+      <button class="filter-btn active" id="filterPeriod" onclick="setFilter('period')">今期のみ</button>
+      <button class="filter-btn"        id="filterAll"    onclick="setFilter('all')">全期間</button>
+    </div>
+    <div class="category-list" id="categoryList"></div>
+  </div>
+
+  <!-- History -->
+  <div class="history-section">
+    <div class="history-header">
+      <h2>📋 履歴</h2>
+      <button class="btn-clear" onclick="clearAll()">全削除</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CATEGORIES = [
+  { id: 'food',    label: '食費',   icon: '🛒' },
+  { id: 'dining',  label: '外食',   icon: '🍜' },
+  { id: 'daily',   label: '日用品', icon: '🧴' },
+  { id: 'rice',    label: 'お米',   icon: '🍚' },
+  { id: 'car',     label: '車系',   icon: '🚗' },
+  { id: 'misc',    label: '雑費',   icon: '📦' },
+  { id: 'medical', label: '医療費', icon: '💊' },
+  { id: 'leisure', label: '娯楽費', icon: '🎮' },
+];
+
+let selectedCategory   = null;
+let currentImageBase64 = null;
+let currentFilter      = 'period';
+let entries = JSON.parse(localStorage.getItem('receipt_entries') || '[]');
+
+// 設定: { budget, periodStart, periodEnd }
+let settings = JSON.parse(localStorage.getItem('receipt_settings') || '{}');
+
+// ===== 集計期間計算 =====
+function getCurrentPeriod() {
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const month = now.getMonth(); // 0-indexed
+  const day   = now.getDate();
+
+  const s = parseInt(settings.periodStart) || 1;
+  const e = parseInt(settings.periodEnd)   || 0; // 0=末日
+
+  // 開始日が今月s日より前 → 開始は今月s日、終了は翌月e日
+  // 開始日が今月s日より後 → 開始は前月s日、終了は今月e日
+  let startYear, startMonth, endYear, endMonth, endDay;
+
+  if (day >= s) {
+    startYear  = year;
+    startMonth = month;
+    endYear    = month === 11 ? year + 1 : year;
+    endMonth   = month === 11 ? 0 : month + 1;
+  } else {
+    startYear  = month === 0 ? year - 1 : year;
+    startMonth = month === 0 ? 11 : month - 1;
+    endYear    = year;
+    endMonth   = month;
+  }
+
+  const startDate = new Date(startYear, startMonth, s, 0, 0, 0, 0);
+  const endDayNum = e > 0 ? e : new Date(endYear, endMonth + 1, 0).getDate();
+  const endDate   = new Date(endYear, endMonth, endDayNum, 23, 59, 59, 999);
+
+  return { startDate, endDate };
+}
+
+function isInPeriod(timestamp) {
+  const { startDate, endDate } = getCurrentPeriod();
+  const d = new Date(timestamp);
+  return d >= startDate && d <= endDate;
+}
+
+function formatPeriodLabel() {
+  const { startDate, endDate } = getCurrentPeriod();
+  const fmt = (d) => `${d.getMonth()+1}/${d.getDate()}`;
+  return `${fmt(startDate)} 〜 ${fmt(endDate)}`;
+}
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  const savedKey = localStorage.getItem('receipt_api_key');
+  if (savedKey) document.getElementById('apiKey').value = savedKey;
+
+  if (settings.budget)      document.getElementById('budgetInput').value  = settings.budget;
+  if (settings.periodStart) document.getElementById('periodStart').value  = settings.periodStart;
+  if (settings.periodEnd)   document.getElementById('periodEnd').value    = settings.periodEnd;
+
+  renderCategoryGrid();
+  renderAll();
+  document.getElementById('amountInput').addEventListener('input', updateAddBtn);
+});
+
+// ===== Settings =====
+function toggleSettings() {
+  const panel  = document.getElementById('settingsPanel');
+  const toggle = document.getElementById('settingsToggle');
+  panel.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+function applySettings() {
+  settings.budget      = parseInt(document.getElementById('budgetInput').value) || 0;
+  settings.periodStart = parseInt(document.getElementById('periodStart').value) || 1;
+  settings.periodEnd   = parseInt(document.getElementById('periodEnd').value)   || 0;
+  localStorage.setItem('receipt_settings', JSON.stringify(settings));
+  renderAll();
+  showToast('設定を保存しました');
+  // close panel
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsToggle').classList.remove('open');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (key) { localStorage.setItem('receipt_api_key', key); showToast('APIキーを保存しました'); }
+}
+
+// ===== Filter =====
+function setFilter(f) {
+  currentFilter = f;
+  document.getElementById('filterPeriod').classList.toggle('active', f === 'period');
+  document.getElementById('filterAll').classList.toggle('active',    f === 'all');
+  renderSummary();
+}
+
+// ===== Category Grid =====
+function renderCategoryGrid() {
+  document.getElementById('categoryGrid').innerHTML = CATEGORIES.map(c => `
+    <button class="cat-btn ${selectedCategory === c.id ? 'selected' : ''}"
+            onclick="selectCategory('${c.id}')">
+      <span class="cat-icon">${c.icon}</span>
+      <span>${c.label}</span>
+    </button>
+  `).join('');
+}
+
+function selectCategory(id) {
+  selectedCategory = id;
+  renderCategoryGrid();
+  updateAddBtn();
+}
+
+function updateAddBtn() {
+  const amount = parseInt(document.getElementById('amountInput').value);
+  document.getElementById('btnAdd').disabled = !(amount > 0 && selectedCategory);
+}
+
+// ===== Image =====
+function onImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    currentImageBase64 = dataUrl.split(',')[1];
+    document.getElementById('previewImg').src = dataUrl;
+    document.getElementById('previewImg').style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('btnRead').disabled = false;
+    document.getElementById('aiStatus').textContent = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage() {
+  currentImageBase64 = null;
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('placeholder').style.display = 'flex';
+  document.getElementById('btnRead').disabled = true;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('aiStatus').textContent = '';
+}
+
+async function readReceipt() {
+  const apiKey = localStorage.getItem('receipt_api_key') || document.getElementById('apiKey').value.trim();
+  if (!apiKey) { showToast('APIキーを入力してください'); return; }
+  if (!currentImageBase64) return;
+
+  const status = document.getElementById('aiStatus');
+  status.textContent = '🔍 読み取り中...';
+  status.className = 'ai-status loading';
+  document.getElementById('btnRead').disabled = true;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 256,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentImageBase64 } },
+            { type: 'text',  text: 'このレシートの合計金額（税込）を読み取ってください。数字のみ（円マークや「円」不要）を返してください。例: 1580。合計が読み取れない場合は「不明」と返してください。' }
+          ]
+        }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const text = data.content[0].text.trim();
+    const num  = parseInt(text.replace(/[^0-9]/g, ''));
+
+    if (num > 0) {
+      document.getElementById('amountInput').value = num;
+      status.textContent  = `✅ ${num.toLocaleString()}円を読み取りました`;
+      status.className    = 'ai-status success';
+      updateAddBtn();
+    } else {
+      status.textContent = '⚠️ 金額を読み取れませんでした。手動で入力してください。';
+      status.className   = 'ai-status error';
+    }
+  } catch (e) {
+    status.textContent = `❌ エラー: ${e.message}`;
+    status.className   = 'ai-status error';
+  }
+  document.getElementById('btnRead').disabled = false;
+}
+
+// ===== Add Entry =====
+function addEntry() {
+  const amount = parseInt(document.getElementById('amountInput').value);
+  if (!amount || !selectedCategory) return;
+
+  const cat = CATEGORIES.find(c => c.id === selectedCategory);
+  const now  = new Date();
+  entries.unshift({
+    id: now.getTime(),
+    categoryId:    selectedCategory,
+    categoryLabel: cat.label,
+    categoryIcon:  cat.icon,
+    amount,
+    timestamp: now.getTime(),
+    date: now.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+  });
+  localStorage.setItem('receipt_entries', JSON.stringify(entries));
+
+  document.getElementById('amountInput').value = '';
+  selectedCategory = null;
+  renderCategoryGrid();
+  updateAddBtn();
+  renderAll();
+  clearImage();
+  showToast(`${cat.icon} ${cat.label} ¥${amount.toLocaleString()} を追加しました`);
+}
+
+function deleteEntry(id) {
+  entries = entries.filter(e => e.id !== id);
+  localStorage.setItem('receipt_entries', JSON.stringify(entries));
+  renderAll();
+}
+
+function clearAll() {
+  if (!confirm('全ての履歴を削除しますか？')) return;
+  entries = [];
+  localStorage.setItem('receipt_entries', JSON.stringify(entries));
+  renderAll();
+}
+
+// ===== Render All =====
+function renderAll() {
+  renderBalanceCard();
+  renderSummary();
+  renderHistory();
+  document.getElementById('headerPeriod').textContent = formatPeriodLabel();
+}
+
+// ===== Balance Card =====
+function renderBalanceCard() {
+  const periodEntries = entries.filter(e => isInPeriod(e.timestamp || e.id));
+  const spent  = periodEntries.reduce((s, e) => s + e.amount, 0);
+  const budget = settings.budget || 0;
+  const remain = budget > 0 ? budget - spent : null;
+
+  document.getElementById('bcBudget').textContent = budget > 0 ? `¥${budget.toLocaleString()}` : '未設定';
+  document.getElementById('bcSpent').textContent  = `¥${spent.toLocaleString()}`;
+
+  const remainEl = document.getElementById('bcRemain');
+  if (remain === null) {
+    remainEl.textContent = '–';
+    remainEl.className   = 'bc-value remain-val none';
+  } else if (remain >= 0) {
+    remainEl.textContent = `¥${remain.toLocaleString()}`;
+    remainEl.className   = 'bc-value remain-val positive';
+  } else {
+    remainEl.textContent = `–¥${Math.abs(remain).toLocaleString()}`;
+    remainEl.className   = 'bc-value remain-val negative';
+  }
+
+  // プログレスバー
+  const pct = budget > 0 ? Math.min(spent / budget * 100, 100) : 0;
+  const bar = document.getElementById('progressBar');
+  bar.style.width = pct + '%';
+  bar.className   = 'progress-bar ' + (pct < 70 ? 'ok' : pct < 90 ? 'warn' : 'over');
+  document.getElementById('progressPct').textContent = budget > 0 ? `${Math.round(pct)}%使用` : '';
+
+  // 残り日数
+  const { endDate } = getCurrentPeriod();
+  const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+  document.getElementById('progressDays').textContent = daysLeft >= 0 ? `残り${daysLeft}日` : '期間外';
+}
+
+// ===== Summary =====
+function renderSummary() {
+  const filtered = currentFilter === 'period'
+    ? entries.filter(e => isInPeriod(e.timestamp || e.id))
+    : entries;
+
+  const totals = {};
+  CATEGORIES.forEach(c => totals[c.id] = 0);
+  filtered.forEach(e => { totals[e.categoryId] = (totals[e.categoryId] || 0) + e.amount; });
+
+  const grand = Object.values(totals).reduce((a, b) => a + b, 0);
+  document.getElementById('grandTotal').textContent = `¥${grand.toLocaleString()}`;
+
+  document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => {
+    const total = totals[c.id] || 0;
+    const count = filtered.filter(e => e.categoryId === c.id).length;
+    const pct   = grand > 0 ? Math.round(total / grand * 100) : 0;
+    return `
+      <div class="cat-row ${total > 0 ? 'has-data' : ''}">
+        <span class="cat-icon">${c.icon}</span>
+        <span class="cat-name">${c.label}</span>
+        ${total > 0 ? `<span class="cat-count">${count}件 ${pct}%</span>` : ''}
+        <span class="cat-amount">${total > 0 ? `¥${total.toLocaleString()}` : '–'}</span>
+      </div>`;
+  }).join('');
+}
+
+// ===== History =====
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="empty-state">まだ記録がありません</div>';
+    return;
+  }
+  list.innerHTML = entries.map(e => {
+    const inPeriod = isInPeriod(e.timestamp || e.id);
+    return `
+      <div class="history-item ${inPeriod ? '' : 'outside-period'}">
+        <span class="h-icon">${e.categoryIcon}</span>
+        <span class="h-cat">${e.categoryLabel}</span>
+        <span class="h-date">${e.date}</span>
+        <span class="h-amount">¥${e.amount.toLocaleString()}</span>
+        <button class="h-del" onclick="deleteEntry(${e.id})">×</button>
+      </div>`;
+  }).join('');
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
