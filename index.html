@@ -38,11 +38,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
       color: white;
     }
-    .bc-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
+    .bc-row { display: flex; justify-content: space-between; margin-bottom: 16px; }
     .bc-col { text-align: center; flex: 1; }
     .bc-label { font-size: 11px; opacity: 0.6; margin-bottom: 4px; }
     .bc-value { font-size: 18px; font-weight: 700; }
@@ -52,19 +48,33 @@
     .bc-value.remain-val.positive { color: #7fffb3; }
     .bc-value.remain-val.negative { color: #ff6b6b; }
     .bc-value.remain-val.none     { color: #ccc; }
-
     .progress-wrap { background: rgba(255,255,255,0.15); border-radius: 8px; height: 8px; overflow: hidden; }
     .progress-bar  { height: 100%; border-radius: 8px; transition: width 0.5s; }
     .progress-bar.ok   { background: linear-gradient(90deg, #7fffb3, #00d2ff); }
     .progress-bar.warn { background: linear-gradient(90deg, #ffd700, #ffb347); }
     .progress-bar.over { background: linear-gradient(90deg, #ff6b6b, #ff4500); }
-    .progress-meta {
+    .progress-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; opacity: 0.6; }
+
+    /* 表示期間セレクタ（残高カード用） */
+    .view-period-row {
       display: flex;
-      justify-content: space-between;
-      margin-top: 6px;
-      font-size: 11px;
-      opacity: 0.6;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
     }
+    .view-period-row label { font-size: 11px; opacity: 0.7; white-space: nowrap; }
+    .view-period-select {
+      flex: 1;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+    .view-period-select option { background: #1a1a2e; color: white; }
 
     /* ===== 設定パネル ===== */
     .settings-toggle {
@@ -85,7 +95,6 @@
     }
     .settings-toggle .arrow { transition: transform 0.2s; font-size: 12px; color: #999; }
     .settings-toggle.open .arrow { transform: rotate(180deg); }
-
     .settings-panel {
       background: white;
       border-radius: 16px;
@@ -95,11 +104,9 @@
       display: none;
     }
     .settings-panel.open { display: block; }
-
     .setting-group { margin-bottom: 18px; }
     .setting-group:last-child { margin-bottom: 0; }
     .setting-label { font-size: 12px; font-weight: 600; color: #666; margin-bottom: 8px; display: block; }
-
     .input-row { display: flex; gap: 8px; align-items: center; }
     .input-row input {
       flex: 1;
@@ -112,20 +119,6 @@
     }
     .input-row input:focus { border-color: #667eea; }
     .input-unit { font-size: 13px; color: #888; white-space: nowrap; }
-
-    .period-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .period-row .p-label { font-size: 13px; color: #555; white-space: nowrap; }
-    .period-row input[type=number] {
-      width: 60px;
-      padding: 10px 8px;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 10px;
-      font-size: 14px;
-      outline: none;
-      text-align: center;
-    }
-    .period-row input[type=number]:focus { border-color: #667eea; }
-
     .btn-apply {
       width: 100%;
       padding: 12px;
@@ -136,8 +129,17 @@
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 4px;
     }
+    .period-info-box {
+      background: #f5f3ff;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #555;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .period-info-box strong { color: #667eea; }
 
     /* ===== 入力セクション ===== */
     .input-section {
@@ -148,6 +150,29 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
     .input-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+
+    /* 集計月セレクタ */
+    .month-select-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f5f3ff;
+      border: 1.5px solid #667eea44;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+    .month-select-row .ms-label { font-size: 12px; color: #667eea; font-weight: 600; white-space: nowrap; }
+    .month-select-row select {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 700;
+      color: #667eea;
+      outline: none;
+      cursor: pointer;
+    }
 
     .amount-display {
       background: linear-gradient(135deg, #667eea11, #764ba211);
@@ -237,14 +262,8 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       margin-bottom: 16px;
     }
-    .summary-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
+    .summary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .summary-header h2 { font-size: 15px; font-weight: 600; }
-
     .period-filter-row { display: flex; gap: 6px; margin-bottom: 14px; }
     .filter-btn {
       flex: 1;
@@ -262,18 +281,18 @@
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: white;
     }
-
     .summary-total {
       background: #f5f3ff;
       border-radius: 12px;
       padding: 12px 16px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .summary-total .st-label { font-size: 13px; color: #667eea; font-weight: 600; }
     .summary-total .st-value { font-size: 20px; font-weight: 800; color: #667eea; }
+    .summary-note { font-size: 11px; color: #aaa; margin-bottom: 12px; text-align: right; }
 
     .category-list { display: flex; flex-direction: column; gap: 8px; }
     .cat-row {
@@ -291,6 +310,13 @@
     .cat-row.has-data .cr-name   { color: #333; }
     .cat-row.has-data .cr-amount { color: #333; }
     .cat-row.has-data .cr-count  { color: #999; }
+    .cat-row.excluded { opacity: 0.6; }
+    .cat-row.excluded .cr-name::after {
+      content: '（対象外）';
+      font-size: 10px;
+      color: #bbb;
+      margin-left: 4px;
+    }
 
     /* ===== History ===== */
     .history-section {
@@ -300,12 +326,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       margin-bottom: 16px;
     }
-    .history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
+    .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
     .history-header h2 { font-size: 15px; font-weight: 600; }
     .btn-clear {
       font-size: 12px;
@@ -316,7 +337,6 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
     .month-group { margin-bottom: 16px; }
     .month-group:last-child { margin-bottom: 0; }
     .month-heading {
@@ -327,8 +347,8 @@
       padding: 0 4px;
     }
     .month-heading .mh-label { font-size: 13px; font-weight: 700; color: #667eea; }
+    .month-heading .mh-sub   { font-size: 11px; color: #aaa; }
     .month-heading .mh-total { font-size: 13px; font-weight: 700; color: #333; }
-
     .history-list { display: flex; flex-direction: column; gap: 6px; }
     .history-item {
       display: flex;
@@ -339,11 +359,11 @@
       border-radius: 10px;
       font-size: 13px;
     }
-    .history-item.outside-period { opacity: 0.45; }
     .history-item .h-icon   { font-size: 16px; }
     .history-item .h-cat    { flex: 1; color: #555; }
     .history-item .h-date   { font-size: 11px; color: #aaa; }
     .history-item .h-amount { font-weight: 700; color: #333; }
+    .history-item.is-excluded .h-amount { color: #bbb; }
     .history-item .h-del {
       background: none;
       border: none;
@@ -353,7 +373,6 @@
       padding: 2px 6px;
     }
     .history-item .h-del:hover { color: #e74c3c; }
-
     .empty-state { text-align: center; padding: 20px; color: #bbb; font-size: 13px; }
 
     .toast {
@@ -378,20 +397,24 @@
 
 <header>
   <h1>📒 レシート家計簿</h1>
-  <div class="period-label" id="headerPeriod">集計期間を設定してください</div>
+  <div class="period-label" id="headerPeriod"></div>
 </header>
 
 <div class="container">
 
   <!-- 残高カード -->
   <div class="balance-card">
+    <div class="view-period-row">
+      <label>表示中：</label>
+      <select class="view-period-select" id="viewPeriodSelect" onchange="onViewPeriodChange()"></select>
+    </div>
     <div class="bc-row">
       <div class="bc-col">
         <div class="bc-label">目標予算</div>
         <div class="bc-value budget-val" id="bcBudget">未設定</div>
       </div>
       <div class="bc-col">
-        <div class="bc-label">期間内支出</div>
+        <div class="bc-label">合計支出</div>
         <div class="bc-value spent-val" id="bcSpent">¥0</div>
       </div>
       <div class="bc-col">
@@ -408,29 +431,22 @@
     </div>
   </div>
 
-  <!-- 設定トグル -->
+  <!-- 設定 -->
   <button class="settings-toggle" id="settingsToggle" onclick="toggleSettings()">
-    <span>⚙️ 予算・期間の設定</span>
+    <span>⚙️ 予算の設定</span>
     <span class="arrow">▼</span>
   </button>
   <div class="settings-panel" id="settingsPanel">
+    <div class="period-info-box">
+      📅 集計期間は<strong>毎月20日〜翌月19日</strong>で固定です。<br>
+      例）12/20〜1/19 → <strong>1月分</strong>として集計
+    </div>
     <div class="setting-group">
       <label class="setting-label">💰 月の目標予算（任意）</label>
       <div class="input-row">
-        <input type="number" id="budgetInput" placeholder="例: 50000" min="0" />
+        <input type="number" id="budgetInput" placeholder="例: 50000" min="0" inputmode="numeric" />
         <span class="input-unit">円</span>
       </div>
-    </div>
-    <div class="setting-group">
-      <label class="setting-label">📅 集計期間（毎月◯日 〜 翌月◯日）</label>
-      <div class="period-row">
-        <span class="p-label">毎月</span>
-        <input type="number" id="periodStart" min="1" max="31" placeholder="1" />
-        <span class="p-label">日から翌月</span>
-        <input type="number" id="periodEnd" min="1" max="31" placeholder="末" />
-        <span class="p-label">日まで</span>
-      </div>
-      <div style="margin-top:8px; font-size:12px; color:#aaa;">※ 空欄の場合は1日〜末日（暦月）</div>
     </div>
     <button class="btn-apply" onclick="applySettings()">設定を保存</button>
   </div>
@@ -438,6 +454,13 @@
   <!-- 入力 -->
   <div class="input-section">
     <h2>💴 金額とカテゴリ</h2>
+
+    <!-- 集計月セレクタ -->
+    <div class="month-select-row">
+      <span class="ms-label">📅 集計月</span>
+      <select id="entryMonthSelect"></select>
+    </div>
+
     <div class="amount-display">
       <span class="label">金額</span>
       <input type="number" id="amountInput" placeholder="0" min="0" inputmode="numeric" />
@@ -455,14 +478,11 @@
     <div class="summary-header">
       <h2>📊 カテゴリ別合計</h2>
     </div>
-    <div class="period-filter-row">
-      <button class="filter-btn active" id="filterPeriod" onclick="setFilter('period')">今期のみ</button>
-      <button class="filter-btn"        id="filterAll"    onclick="setFilter('all')">全期間</button>
-    </div>
     <div class="summary-total">
       <span class="st-label">合計支出</span>
       <span class="st-value" id="grandTotal">¥0</span>
     </div>
+    <div class="summary-note">※ 娯楽費は合計対象外</div>
     <div class="category-list" id="categoryList"></div>
   </div>
 
@@ -481,69 +501,118 @@
 
 <script>
 const CATEGORIES = [
-  { id: 'food',    label: '食費',   icon: '🛒' },
-  { id: 'dining',  label: '外食',   icon: '🍜' },
-  { id: 'daily',   label: '日用品', icon: '🧴' },
-  { id: 'rice',    label: 'お米',   icon: '🍚' },
-  { id: 'car',     label: '車系',   icon: '🚗' },
-  { id: 'misc',    label: '雑費',   icon: '📦' },
-  { id: 'medical', label: '医療費', icon: '💊' },
-  { id: 'leisure', label: '娯楽費', icon: '🎮' },
+  { id: 'food',    label: '食費',   icon: '🛒', excluded: false },
+  { id: 'dining',  label: '外食',   icon: '🍜', excluded: false },
+  { id: 'daily',   label: '日用品', icon: '🧴', excluded: false },
+  { id: 'rice',    label: 'お米',   icon: '🍚', excluded: false },
+  { id: 'car',     label: '車系',   icon: '🚗', excluded: false },
+  { id: 'misc',    label: '雑費',   icon: '📦', excluded: false },
+  { id: 'medical', label: '医療費', icon: '💊', excluded: false },
+  { id: 'leisure', label: '娯楽費', icon: '🎮', excluded: true  },
 ];
 
 let selectedCategory = null;
-let currentFilter    = 'period';
+let currentViewKey   = null; // 残高カードで表示中の期間キー
 let entries  = JSON.parse(localStorage.getItem('receipt_entries')  || '[]');
 let settings = JSON.parse(localStorage.getItem('receipt_settings') || '{}');
 
-// ===== 集計期間 =====
-function getCurrentPeriod() {
-  const now   = new Date();
-  const year  = now.getFullYear();
-  const month = now.getMonth();
-  const day   = now.getDate();
-  const s = parseInt(settings.periodStart) || 1;
-  const e = parseInt(settings.periodEnd)   || 0;
+// ===== 期間ロジック（20日〜19日固定） =====
+// periodKey = "YYYY-MM" … その月の分（20日スタート〜翌月19日）
+// 例: 2026-01 = 2025/12/20 〜 2026/01/19
 
-  let startYear, startMonth, endYear, endMonth;
-  if (day >= s) {
-    startYear = year; startMonth = month;
-    endYear   = month === 11 ? year + 1 : year;
-    endMonth  = month === 11 ? 0 : month + 1;
+function getPeriodKeyForDate(date) {
+  const y = date.getFullYear();
+  const m = date.getMonth(); // 0-indexed
+  const d = date.getDate();
+  // 20日以降は翌月分
+  if (d >= 20) {
+    const nm = m === 11 ? 0 : m + 1;
+    const ny = m === 11 ? y + 1 : y;
+    return `${ny}-${String(nm + 1).padStart(2, '0')}`;
   } else {
-    startYear = month === 0 ? year - 1 : year;
-    startMonth = month === 0 ? 11 : month - 1;
-    endYear = year; endMonth = month;
+    return `${y}-${String(m + 1).padStart(2, '0')}`;
   }
-
-  const startDate  = new Date(startYear, startMonth, s, 0, 0, 0, 0);
-  const endDayNum  = e > 0 ? e : new Date(endYear, endMonth + 1, 0).getDate();
-  const endDate    = new Date(endYear, endMonth, endDayNum, 23, 59, 59, 999);
-  return { startDate, endDate };
 }
 
-function isInPeriod(ts) {
-  const { startDate, endDate } = getCurrentPeriod();
+function getCurrentPeriodKey() {
+  return getPeriodKeyForDate(new Date());
+}
+
+function getPeriodRange(key) {
+  // key = "YYYY-MM"
+  const [y, m] = key.split('-').map(Number);
+  // 開始: 前月20日
+  const prevM = m === 1 ? 12 : m - 1;
+  const prevY = m === 1 ? y - 1 : y;
+  const start = new Date(prevY, prevM - 1, 20, 0, 0, 0, 0);
+  // 終了: 当月19日
+  const end   = new Date(y, m - 1, 19, 23, 59, 59, 999);
+  return { start, end };
+}
+
+function isInPeriod(ts, key) {
+  const { start, end } = getPeriodRange(key);
   const d = new Date(ts);
-  return d >= startDate && d <= endDate;
+  return d >= start && d <= end;
 }
 
-function formatPeriodLabel() {
-  const { startDate, endDate } = getCurrentPeriod();
+function keyToLabel(key) {
+  const [y, m] = key.split('-').map(Number);
+  return `${y}年${m}月分`;
+}
+
+function keyToRangeLabel(key) {
+  const { start, end } = getPeriodRange(key);
   const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
-  return `${fmt(startDate)} 〜 ${fmt(endDate)}`;
+  return `${fmt(start)}〜${fmt(end)}`;
+}
+
+// 表示用の期間キー一覧（過去12ヶ月 + 翌月）
+function getPeriodKeys() {
+  const keys = [];
+  const now  = new Date();
+  // 翌月分まで含める（先払い等のため）
+  for (let i = -1; i <= 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    if (!keys.includes(k)) keys.push(k);
+  }
+  return keys.sort((a, b) => b.localeCompare(a));
 }
 
 // ===== Init =====
 document.addEventListener('DOMContentLoaded', () => {
-  if (settings.budget)      document.getElementById('budgetInput').value  = settings.budget;
-  if (settings.periodStart) document.getElementById('periodStart').value  = settings.periodStart;
-  if (settings.periodEnd)   document.getElementById('periodEnd').value    = settings.periodEnd;
+  if (settings.budget) document.getElementById('budgetInput').value = settings.budget;
+  currentViewKey = getCurrentPeriodKey();
 
+  populatePeriodSelects();
   renderCategoryGrid();
   renderAll();
   document.getElementById('amountInput').addEventListener('input', updateAddBtn);
 });
+
+function populatePeriodSelects() {
+  const keys = getPeriodKeys();
+  const curKey = getCurrentPeriodKey();
+
+  // 残高カード用
+  const viewSel = document.getElementById('viewPeriodSelect');
+  viewSel.innerHTML = keys.map(k =>
+    `<option value="${k}" ${k === curKey ? 'selected' : ''}>${keyToLabel(k)}</option>`
+  ).join('');
+
+  // 入力欄用
+  const entrySel = document.getElementById('entryMonthSelect');
+  entrySel.innerHTML = keys.map(k =>
+    `<option value="${k}" ${k === curKey ? 'selected' : ''}>${keyToLabel(k)}</option>`
+  ).join('');
+}
+
+function onViewPeriodChange() {
+  currentViewKey = document.getElementById('viewPeriodSelect').value;
+  renderBalanceCard();
+  renderSummary();
+}
 
 // ===== Settings =====
 function toggleSettings() {
@@ -552,22 +621,12 @@ function toggleSettings() {
 }
 
 function applySettings() {
-  settings.budget      = parseInt(document.getElementById('budgetInput').value)  || 0;
-  settings.periodStart = parseInt(document.getElementById('periodStart').value)  || 1;
-  settings.periodEnd   = parseInt(document.getElementById('periodEnd').value)    || 0;
+  settings.budget = parseInt(document.getElementById('budgetInput').value) || 0;
   localStorage.setItem('receipt_settings', JSON.stringify(settings));
   renderAll();
   showToast('設定を保存しました');
   document.getElementById('settingsPanel').classList.remove('open');
   document.getElementById('settingsToggle').classList.remove('open');
-}
-
-// ===== Filter =====
-function setFilter(f) {
-  currentFilter = f;
-  document.getElementById('filterPeriod').classList.toggle('active', f === 'period');
-  document.getElementById('filterAll').classList.toggle('active',    f === 'all');
-  renderSummary();
 }
 
 // ===== Category Grid =====
@@ -597,17 +656,20 @@ function addEntry() {
   const amount = parseInt(document.getElementById('amountInput').value);
   if (!amount || !selectedCategory) return;
 
-  const cat = CATEGORIES.find(c => c.id === selectedCategory);
-  const now  = new Date();
+  const cat      = CATEGORIES.find(c => c.id === selectedCategory);
+  const now      = new Date();
+  const monthKey = document.getElementById('entryMonthSelect').value;
+
   entries.unshift({
-    id: now.getTime(),
+    id:            now.getTime(),
     categoryId:    selectedCategory,
     categoryLabel: cat.label,
     categoryIcon:  cat.icon,
+    excluded:      cat.excluded,
     amount,
-    timestamp: now.getTime(),
+    timestamp:     now.getTime(),
+    monthKey,
     date: now.toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
-    monthKey: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`,
   });
   localStorage.setItem('receipt_entries', JSON.stringify(entries));
 
@@ -616,7 +678,7 @@ function addEntry() {
   renderCategoryGrid();
   updateAddBtn();
   renderAll();
-  showToast(`${cat.icon} ${cat.label} ¥${amount.toLocaleString()} を追加しました`);
+  showToast(`${cat.icon} ${cat.label} ¥${amount.toLocaleString()} を追加しました（${keyToLabel(monthKey)}）`);
 }
 
 function undoLast() {
@@ -646,13 +708,18 @@ function renderAll() {
   renderSummary();
   renderHistory();
   document.getElementById('btnUndo').disabled = entries.length === 0;
-  document.getElementById('headerPeriod').textContent = formatPeriodLabel();
+
+  const key = getCurrentPeriodKey();
+  document.getElementById('headerPeriod').textContent =
+    `今期：${keyToLabel(key)}（${keyToRangeLabel(key)}）`;
 }
 
 // ===== Balance Card =====
 function renderBalanceCard() {
-  const periodEntries = entries.filter(e => isInPeriod(e.timestamp || e.id));
-  const spent  = periodEntries.reduce((s, e) => s + e.amount, 0);
+  const key = currentViewKey || getCurrentPeriodKey();
+  const periodEntries = entries.filter(e => e.monthKey === key);
+  // 娯楽費を除いた合計
+  const spent  = periodEntries.filter(e => !e.excluded).reduce((s, e) => s + e.amount, 0);
   const budget = settings.budget || 0;
   const remain = budget > 0 ? budget - spent : null;
 
@@ -677,33 +744,38 @@ function renderBalanceCard() {
   bar.className   = 'progress-bar ' + (pct < 70 ? 'ok' : pct < 90 ? 'warn' : 'over');
   document.getElementById('progressPct').textContent = budget > 0 ? `${Math.round(pct)}%使用` : '';
 
-  const { endDate } = getCurrentPeriod();
-  const daysLeft = Math.ceil((endDate - new Date()) / (1000*60*60*24));
-  document.getElementById('progressDays').textContent = daysLeft >= 0 ? `残り${daysLeft}日` : '期間外';
+  const { end } = getPeriodRange(key);
+  const daysLeft = Math.ceil((end - new Date()) / (1000*60*60*24));
+  document.getElementById('progressDays').textContent =
+    daysLeft > 0 ? `残り${daysLeft}日` : daysLeft === 0 ? '本日締め' : '期間終了';
 }
 
 // ===== Summary =====
 function renderSummary() {
-  const filtered = currentFilter === 'period'
-    ? entries.filter(e => isInPeriod(e.timestamp || e.id))
-    : entries;
+  const key      = currentViewKey || getCurrentPeriodKey();
+  const filtered = entries.filter(e => e.monthKey === key);
 
   const totals = {};
   CATEGORIES.forEach(c => totals[c.id] = 0);
   filtered.forEach(e => { totals[e.categoryId] = (totals[e.categoryId] || 0) + e.amount; });
 
-  const grand = Object.values(totals).reduce((a, b) => a + b, 0);
+  // 娯楽費除いた合計
+  const grand = CATEGORIES
+    .filter(c => !c.excluded)
+    .reduce((s, c) => s + (totals[c.id] || 0), 0);
   document.getElementById('grandTotal').textContent = `¥${grand.toLocaleString()}`;
 
   document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => {
     const total = totals[c.id] || 0;
     const count = filtered.filter(e => e.categoryId === c.id).length;
-    const pct   = grand > 0 ? Math.round(total / grand * 100) : 0;
+    const base  = c.excluded ? 0 : grand;
+    const pct   = base > 0 ? Math.round(total / base * 100) : 0;
     return `
-      <div class="cat-row ${total > 0 ? 'has-data' : ''}">
+      <div class="cat-row ${total > 0 ? 'has-data' : ''} ${c.excluded ? 'excluded' : ''}">
         <span class="cr-icon">${c.icon}</span>
         <span class="cr-name">${c.label}</span>
-        ${total > 0 ? `<span class="cr-count">${count}件 ${pct}%</span>` : ''}
+        ${total > 0 && !c.excluded ? `<span class="cr-count">${count}件 ${pct}%</span>` : ''}
+        ${total > 0 && c.excluded  ? `<span class="cr-count">${count}件</span>` : ''}
         <span class="cr-amount">${total > 0 ? `¥${total.toLocaleString()}` : '–'}</span>
       </div>`;
   }).join('');
@@ -717,38 +789,37 @@ function renderHistory() {
     return;
   }
 
-  // 月ごとにグループ化
+  // monthKey でグループ化
   const groups = {};
   entries.forEach(e => {
-    const key = e.monthKey || e.date.substring(0, 5).replace('/', '-');
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(e);
+    const k = e.monthKey || getCurrentPeriodKey();
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(e);
   });
 
   const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
   container.innerHTML = sortedKeys.map(key => {
-    const items     = groups[key];
-    const monthTotal = items.reduce((s, e) => s + e.amount, 0);
-    const [y, m]    = key.split('-');
-    const label     = `${y}年${parseInt(m)}月`;
+    const items      = groups[key];
+    // 月の合計も娯楽費除外
+    const monthTotal = items.filter(e => !e.excluded).reduce((s, e) => s + e.amount, 0);
 
-    const itemsHtml = items.map(e => {
-      const inPeriod = isInPeriod(e.timestamp || e.id);
-      return `
-        <div class="history-item ${inPeriod ? '' : 'outside-period'}">
-          <span class="h-icon">${e.categoryIcon}</span>
-          <span class="h-cat">${e.categoryLabel}</span>
-          <span class="h-date">${e.date}</span>
-          <span class="h-amount">¥${e.amount.toLocaleString()}</span>
-          <button class="h-del" onclick="deleteEntry(${e.id})">×</button>
-        </div>`;
-    }).join('');
+    const itemsHtml = items.map(e => `
+      <div class="history-item ${e.excluded ? 'is-excluded' : ''}">
+        <span class="h-icon">${e.categoryIcon}</span>
+        <span class="h-cat">${e.categoryLabel}</span>
+        <span class="h-date">${e.date}</span>
+        <span class="h-amount">¥${e.amount.toLocaleString()}</span>
+        <button class="h-del" onclick="deleteEntry(${e.id})">×</button>
+      </div>`).join('');
 
     return `
       <div class="month-group">
         <div class="month-heading">
-          <span class="mh-label">📅 ${label}</span>
+          <div>
+            <div class="mh-label">📅 ${keyToLabel(key)}</div>
+            <div class="mh-sub">${keyToRangeLabel(key)}</div>
+          </div>
           <span class="mh-total">¥${monthTotal.toLocaleString()}</span>
         </div>
         <div class="history-list">${itemsHtml}</div>
@@ -761,7 +832,7 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
 </script>
 </body>
